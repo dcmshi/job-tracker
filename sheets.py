@@ -81,6 +81,20 @@ def get_existing_thread_ids(spreadsheet: gspread.Spreadsheet) -> set[str]:
         sys.exit(1)
 
 
+def get_existing_subject_keys(spreadsheet: gspread.Spreadsheet) -> set[tuple]:
+    """Return (company, email_subject) pairs already logged, for secondary dedup."""
+    worksheet = spreadsheet.sheet1
+    try:
+        companies = worksheet.col_values(2)   # column B: company
+        subjects = worksheet.col_values(7)    # column G: email_subject
+        # Pad shorter list and skip header row
+        pairs = zip(companies[1:], subjects[1:])
+        return {(c.strip().lower(), s.strip().lower()) for c, s in pairs if c and s}
+    except Exception as e:
+        print(f"\n[ERROR] Could not read existing subject keys: {e}", file=sys.stderr)
+        sys.exit(1)
+
+
 def get_latest_date(spreadsheet: gspread.Spreadsheet) -> date | None:
     """Return the most recent date_applied from the sheet, or None if empty."""
     worksheet = spreadsheet.sheet1
@@ -102,12 +116,14 @@ def append_applications(
     spreadsheet: gspread.Spreadsheet,
     applications: list[JobApplication],
 ) -> None:
-    """Append new job application rows to the sheet."""
+    """Append new job application rows to the sheet, writing header if sheet is empty."""
     if not applications:
         return
     worksheet = spreadsheet.sheet1
-    rows = [app.to_sheet_row() for app in applications]
     try:
+        if worksheet.acell("A1").value != "thread_id":
+            worksheet.append_row(JobApplication.sheet_headers(), value_input_option="RAW")
+        rows = [app.to_sheet_row() for app in applications]
         worksheet.append_rows(rows, value_input_option="RAW")
     except Exception as e:
         print(f"\n[ERROR] Failed to write rows to Google Sheet: {e}", file=sys.stderr)

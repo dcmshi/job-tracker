@@ -7,6 +7,7 @@ class JobApplication(BaseModel):
     company: str
     job_title: str = "Unknown"
     date_applied: date
+    email_type: str = "Unknown"
     ats_provider: str
     email_subject: str
     thread_link: str
@@ -18,6 +19,7 @@ class JobApplication(BaseModel):
             self.company,
             self.job_title,
             self.date_applied.isoformat(),
+            self.email_type,
             self.ats_provider,
             self.email_subject,
             self.thread_link,
@@ -31,6 +33,7 @@ class JobApplication(BaseModel):
             "company",
             "job_title",
             "date_applied",
+            "email_type",
             "ats_provider",
             "email_subject",
             "thread_link",

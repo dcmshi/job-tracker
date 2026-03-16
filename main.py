@@ -98,6 +98,15 @@ def cmd_auth(args) -> None:
     run_auth_flow()
 
 
+def load_gemini_key() -> str | None:
+    """Load Gemini API key from config.json if present."""
+    config = json.loads(Path("config.json").read_text()) if Path("config.json").exists() else {}
+    key = config.get("gemini_api_key")
+    if not key:
+        print("[INFO] No gemini_api_key in config.json — skipping LLM enrichment.")
+    return key or None
+
+
 def cmd_scan(args) -> None:
     from scanner import fetch_applications
 
@@ -107,6 +116,7 @@ def cmd_scan(args) -> None:
         print("[INFO] No valid token found. Running auth flow...")
         creds = run_auth_flow()
 
+    gemini_api_key = load_gemini_key()
     use_local = args.local
 
     # Determine start date
@@ -128,7 +138,7 @@ def cmd_scan(args) -> None:
             since = DEFAULT_SINCE
 
         print(f"[INFO] Scanning from {since} (local mode)")
-        applications = fetch_applications(creds, since, existing_thread_ids)
+        applications = fetch_applications(creds, since, existing_thread_ids, gemini_api_key)
 
         if not applications:
             print("[INFO] No new applications found.")
@@ -139,10 +149,11 @@ def cmd_scan(args) -> None:
 
     else:
         # Sheets mode
-        from sheets import open_or_create_sheet, get_existing_thread_ids, get_latest_date, append_applications
+        from sheets import open_or_create_sheet, get_existing_thread_ids, get_existing_subject_keys, get_latest_date, append_applications
 
         spreadsheet = open_or_create_sheet(creds)
         existing_thread_ids = get_existing_thread_ids(spreadsheet)
+        existing_subject_keys = get_existing_subject_keys(spreadsheet)
 
         if args.since:
             since = args.since
@@ -155,7 +166,7 @@ def cmd_scan(args) -> None:
                 since = DEFAULT_SINCE
 
         print(f"[INFO] Scanning from {since}")
-        applications = fetch_applications(creds, since, existing_thread_ids)
+        applications = fetch_applications(creds, since, existing_thread_ids, gemini_api_key, existing_subject_keys)
 
         if not applications:
             print("[INFO] No new applications found.")
@@ -201,7 +212,7 @@ def main() -> None:
     parser.add_argument(
         "--local",
         action="store_true",
-        help="Write results to local mitigation_log.json instead of Google Sheets.",
+        help="Write results to local applications_log.json instead of Google Sheets.",
     )
 
     args = parser.parse_args()

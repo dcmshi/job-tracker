@@ -1,0 +1,13 @@
+[project]
+name = "job-tracker"
+version = "0.1.0"
+requires-python = ">=3.10"
+dependencies = [
+    "google-api-python-client>=2.0",
+    "google-auth-oauthlib>=1.0",
+    "gspread>=6.0",
+    "pydantic>=2.0",
+]
+
+[project.scripts]
+job-tracker = "main:main"

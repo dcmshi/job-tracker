@@ -1,0 +1,8 @@
+CLAUDE.md
+credentials.json
+token.json
+config.json
+applications_log.json
+.venv/
+__pycache__/
+*.pyc

@@ -123,6 +123,24 @@ Results are written to your Google Sheet with the following columns:
 
 ---
 
+## Quick Reference
+
+```bash
+# Day-to-day use
+uv run python main.py --scan
+
+# Re-scan from a specific date
+uv run python main.py --scan --since 2026-01-01
+
+# If token expires
+uv run python main.py --auth
+
+# Run tests
+uv run python tests.py
+```
+
+---
+
 ## Running Tests
 
 ```bash

@@ -79,7 +79,7 @@ def fetch_applications(
             .messages()
             .get(userId="me", id=msg_stub["id"], format="metadata",
                  metadataHeaders=["Subject", "From", "Date"])
-            .execute()
+            .execute(num_retries=2)
         )
 
         headers = msg.get("payload", {}).get("headers", [])
@@ -146,7 +146,7 @@ def _get_email_body(service, msg_id: str) -> str:
     The body is never logged or stored — used transiently for extraction.
     """
     try:
-        msg = service.users().messages().get(userId="me", id=msg_id, format="full").execute()
+        msg = service.users().messages().get(userId="me", id=msg_id, format="full").execute(num_retries=2)
         payload = msg.get("payload", {})
         return _extract_text_from_payload(payload)
     except Exception:
@@ -189,7 +189,7 @@ def _list_all_messages(service, query: str) -> list[dict]:
         if page_token:
             kwargs["pageToken"] = page_token
 
-        response = service.users().messages().list(**kwargs).execute()
+        response = service.users().messages().list(**kwargs).execute(num_retries=2)
         results.extend(response.get("messages", []))
 
         page_token = response.get("nextPageToken")

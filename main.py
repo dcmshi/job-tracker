@@ -103,7 +103,12 @@ def load_gemini_key() -> str | None:
     config = json.loads(Path("config.json").read_text()) if Path("config.json").exists() else {}
     key = config.get("gemini_api_key")
     if not key:
-        print("[INFO] No gemini_api_key in config.json — skipping LLM enrichment.")
+        print(
+            "[WARNING] No gemini_api_key found in config.json — "
+            "email classification and false-positive filtering will be disabled. "
+            "See README.md for setup instructions.",
+            file=sys.stderr,
+        )
     return key or None
 
 

@@ -57,7 +57,6 @@ def open_or_create_sheet(creds: Credentials) -> gspread.Spreadsheet:
     # First run: create a new sheet
     try:
         spreadsheet = client.create(SHEET_NAME)
-        spreadsheet.share(None, perm_type="anyone", role="writer")
         _save_config({"sheet_id": spreadsheet.id})
         worksheet = spreadsheet.sheet1
         worksheet.append_row(JobApplication.sheet_headers(), value_input_option="RAW")

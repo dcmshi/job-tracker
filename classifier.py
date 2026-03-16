@@ -88,7 +88,16 @@ def classify_and_extract(
                 response_mime_type="application/json",
             ),
         )
-        return json.loads(response.text)
+        data = json.loads(response.text)
+        required = {"is_job_related", "email_type", "company", "job_title", "ats_provider"}
+        missing = required - set(data.keys())
+        if missing:
+            print(f"  [WARN] Gemini response missing fields: {missing}")
+            return None
+        return data
+    except json.JSONDecodeError as e:
+        print(f"  [WARN] Gemini returned invalid JSON: {e}")
+        return None
     except Exception as e:
         print(f"  [WARN] Gemini classification failed: {e}")
         return None
